@@ -31,10 +31,15 @@ export async function GET(request: NextRequest) {
     // Validar query parameters
     const validationResult = clientsQuerySchema.safeParse(queryData)
     if (!validationResult.success) {
+      console.error('Erro de validação nos parâmetros:', {
+        queryData,
+        errors: validationResult.error.errors
+      })
       return NextResponse.json(
         { 
           error: 'Parâmetros inválidos', 
-          details: validationResult.error.errors 
+          details: validationResult.error.errors,
+          receivedData: queryData
         },
         { status: 400 }
       )

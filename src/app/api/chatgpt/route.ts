@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import OpenAI from 'openai'
+import { getModelConfig, isValidModel } from '@/lib/chatgpt-config'
 
 // Configuração do cliente OpenAI
 const openai = new OpenAI({
@@ -27,7 +28,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { messages, model = 'gpt-3.5-turbo' } = body
+    const { messages, model = 'gpt-4o' } = body
+
+    // Validar modelo
+    if (!isValidModel(model)) {
+      return NextResponse.json(
+        { error: `Modelo "${model}" não é suportado` },
+        { status: 400 }
+      )
+    }
 
     // Validar entrada
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -50,24 +59,24 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Adicionar mensagem de sistema se não existir
-    const systemMessage = {
-      role: 'system' as const,
-      content: 'Você é um assistente útil e prestativo. Responda sempre em português brasileiro, de forma clara e objetiva.'
+    // Usar configurações otimizadas para compatibilidade com ChatGPT oficial
+    const modelConfig = getModelConfig(model)
+    
+    // Não adicionar system message automático - deixar que o frontend controle
+    const finalMessages = messages
+
+    // Log para debug (apenas em desenvolvimento)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🤖 Usando modelo: ${model}`)
+      console.log(`⚙️ Configuração:`, modelConfig)
+      console.log(`💬 ${finalMessages.length} mensagens`)
     }
 
-    const hasSystemMessage = messages.some(msg => msg.role === 'system')
-    const finalMessages = hasSystemMessage ? messages : [systemMessage, ...messages]
-
-    // Fazer a requisição para o OpenAI
+    // Fazer a requisição para o OpenAI com configurações idênticas ao ChatGPT
     const completion = await openai.chat.completions.create({
       model,
       messages: finalMessages,
-      max_tokens: 1000,
-      temperature: 0.7,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
+      ...modelConfig
     })
 
     const responseContent = completion.choices[0]?.message?.content

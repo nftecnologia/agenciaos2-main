@@ -39,83 +39,60 @@ export interface AssistantType {
   systemPrompt: string
 }
 
+// Modelos atualizados conforme API oficial da OpenAI (Janeiro 2025)
 const availableModels: ChatModel[] = [
-  {
-    id: 'gpt-3.5-turbo',
-    name: 'GPT-3.5 Turbo',
-    description: 'Rápido e eficiente para tarefas gerais',
-    maxTokens: 4096
-  },
-  {
-    id: 'gpt-3.5-turbo-16k',
-    name: 'GPT-3.5 Turbo 16K',
-    description: 'GPT-3.5 com contexto estendido para 16K tokens',
-    maxTokens: 16384
-  },
-  {
-    id: 'gpt-4',
-    name: 'GPT-4',
-    description: 'Mais avançado e preciso, ideal para tarefas complexas',
-    maxTokens: 8192
-  },
-  {
-    id: 'gpt-4-32k',
-    name: 'GPT-4 32K',
-    description: 'GPT-4 com contexto estendido para 32K tokens',
-    maxTokens: 32768
-  },
-  {
-    id: 'gpt-4-turbo',
-    name: 'GPT-4 Turbo',
-    description: 'Versão mais rápida do GPT-4 com contexto estendido',
-    maxTokens: 128000
-  },
-  {
-    id: 'gpt-4-turbo-preview',
-    name: 'GPT-4 Turbo Preview',
-    description: 'Versão prévia do GPT-4 Turbo com melhorias',
-    maxTokens: 128000
-  },
   {
     id: 'gpt-4o',
     name: 'GPT-4o',
-    description: 'Modelo mais recente com capacidades multimodais',
+    description: 'Modelo mais avançado com capacidades multimodais e raciocínio superior',
     maxTokens: 128000
   },
   {
     id: 'gpt-4o-mini',
     name: 'GPT-4o Mini',
-    description: 'Versão compacta e rápida do GPT-4o',
+    description: 'Versão otimizada do GPT-4o - rápida e econômica',
     maxTokens: 128000
   },
   {
-    id: 'gpt-4-1106-preview',
-    name: 'GPT-4 1106 Preview',
-    description: 'GPT-4 com melhorias e dados até abril 2024',
+    id: 'gpt-4-turbo',
+    name: 'GPT-4 Turbo',
+    description: 'GPT-4 mais rápido com contexto de 128K tokens',
     maxTokens: 128000
   },
   {
-    id: 'gpt-4-0125-preview',
-    name: 'GPT-4 0125 Preview',
-    description: 'GPT-4 otimizado para reduzir casos de "preguiça"',
+    id: 'gpt-4',
+    name: 'GPT-4',
+    description: 'Modelo avançado para tarefas complexas e análise profunda',
+    maxTokens: 8192
+  },
+  {
+    id: 'gpt-3.5-turbo',
+    name: 'GPT-3.5 Turbo',
+    description: 'Rápido e eficiente para tarefas gerais do dia a dia',
+    maxTokens: 16385
+  },
+  {
+    id: 'chatgpt-4o-latest',
+    name: 'ChatGPT-4o Latest',
+    description: 'Versão mais recente do ChatGPT-4o usada na interface web',
     maxTokens: 128000
   }
 ]
 
-// Usar apenas um assistente padrão
+// Assistente otimizado para máxima compatibilidade com ChatGPT oficial
 const defaultAssistant: AssistantType = {
   id: 'chat-ia',
   name: '🤖 Chat IA',
   description: 'Assistente geral para conversas e perguntas diversas',
   icon: '🤖',
   color: 'bg-blue-500',
-  systemPrompt: 'Você é um assistente de IA útil e amigável. Responda de forma clara e precisa às perguntas do usuário.'
+  systemPrompt: 'You are ChatGPT, a large language model trained by OpenAI. Answer as helpfully as possible while being safe. Your knowledge cutoff is April 2024.'
 }
 
 export function ChatInterface() {
   const [selectedAssistant] = useState<AssistantType>(defaultAssistant)
   const [messagesByAssistant, setMessagesByAssistant] = useState<Record<string, Message[]>>({})
-  const [selectedModel, setSelectedModel] = useState<ChatModel>(availableModels[0])
+  const [selectedModel, setSelectedModel] = useState<ChatModel>(availableModels[0]) // Inicia com GPT-4o
   const [isLoading, setIsLoading] = useState(false)
 
   // Obter mensagens do assistente atual

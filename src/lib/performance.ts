@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import React, { lazy } from 'react'
 
 // Lazy loading para componentes IA - Note: Requires default exports
 export const createLazyComponent = (importPath: string) => 

@@ -1,4 +1,18 @@
-import puppeteer from 'puppeteer'
+// Dynamic import for Puppeteer to avoid build issues in production
+let puppeteer: any = null;
+
+async function getPuppeteer() {
+  if (!puppeteer) {
+    try {
+      puppeteer = await import('puppeteer');
+      return puppeteer.default || puppeteer;
+    } catch (error) {
+      console.error('Puppeteer not available:', error);
+      return null;
+    }
+  }
+  return puppeteer;
+}
 import { EbookContent, EbookDescription } from './ebook-service'
 
 export interface PDFGenerationOptions {
@@ -34,8 +48,15 @@ export class PDFGenerator {
     })
 
     try {
-      const browser = await puppeteer.launch({
+      const puppeteerInstance = await getPuppeteer();
+      
+      if (!puppeteerInstance) {
+        throw new Error('Puppeteer is not available in this environment');
+      }
+
+      const browser = await puppeteerInstance.launch({
         headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',

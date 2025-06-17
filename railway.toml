@@ -4,12 +4,3 @@ builder = "nixpacks"
 [deploy]
 numReplicas = 1
 restartPolicyType = "always"
-
-# Configuração para o serviço web (Next.js)
-[services.web]
-variables = { NODE_ENV = "production" }
-
-# Configuração para o serviço worker (processamento de ebooks)
-[services.worker]
-variables = { NODE_ENV = "production" }
-startCommand = "npm run worker"

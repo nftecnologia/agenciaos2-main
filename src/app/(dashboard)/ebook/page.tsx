@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
-import { EbookWizard } from '@/components/ebook/ebook-wizard'
+import { EbookWizardQueue } from '@/components/ebook/ebook-wizard-queue'
 import { EbookList } from '@/components/ebook/ebook-list'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -66,7 +66,7 @@ export default function EbookPage() {
         />
         
         <div className="py-8">
-          <EbookWizard onComplete={handleWizardComplete} />
+          <EbookWizardQueue onComplete={handleWizardComplete} />
         </div>
       </>
     )

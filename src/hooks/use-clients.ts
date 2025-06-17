@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { eventBus, EVENTS } from '@/lib/event-bus'
 
 export interface Client {
   id: string
@@ -79,6 +80,23 @@ export function useClients(search: string = '', page: number = 1, limit: number 
     fetchClients()
   }, [fetchClients])
 
+  // Listener para eventos de atualização
+  useEffect(() => {
+    const handleRefresh = () => fetchClients()
+    
+    eventBus.on(EVENTS.CLIENT_CREATED, handleRefresh)
+    eventBus.on(EVENTS.CLIENT_UPDATED, handleRefresh)
+    eventBus.on(EVENTS.CLIENT_DELETED, handleRefresh)
+    eventBus.on(EVENTS.REFRESH_ALL, handleRefresh)
+
+    return () => {
+      eventBus.off(EVENTS.CLIENT_CREATED, handleRefresh)
+      eventBus.off(EVENTS.CLIENT_UPDATED, handleRefresh)
+      eventBus.off(EVENTS.CLIENT_DELETED, handleRefresh)
+      eventBus.off(EVENTS.REFRESH_ALL, handleRefresh)
+    }
+  }, [fetchClients])
+
   const createClient = async (clientData: CreateClientData): Promise<Client> => {
     const response = await fetch('/api/clients', {
       method: 'POST',
@@ -93,10 +111,11 @@ export function useClients(search: string = '', page: number = 1, limit: number 
       throw new Error(errorData.error || 'Erro ao criar cliente')
     }
 
-    const client = await response.json()
+    const result = await response.json()
+    const client = result.client || result
     
-    // Atualizar lista local
-    await fetchClients()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.CLIENT_CREATED, client)
     
     return client
   }
@@ -115,10 +134,11 @@ export function useClients(search: string = '', page: number = 1, limit: number 
       throw new Error(errorData.error || 'Erro ao atualizar cliente')
     }
 
-    const client = await response.json()
+    const result = await response.json()
+    const client = result.client || result
     
-    // Atualizar lista local
-    await fetchClients()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.CLIENT_UPDATED, client)
     
     return client
   }
@@ -133,8 +153,8 @@ export function useClients(search: string = '', page: number = 1, limit: number 
       throw new Error(errorData.error || 'Erro ao deletar cliente')
     }
 
-    // Atualizar lista local
-    await fetchClients()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.CLIENT_DELETED, { id })
   }
 
   const refresh = () => {

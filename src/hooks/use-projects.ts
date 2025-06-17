@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { eventBus, EVENTS } from '@/lib/event-bus'
 
 export interface Project {
   id: string
@@ -90,6 +91,23 @@ export function useProjects(
     fetchProjects()
   }, [fetchProjects])
 
+  // Listener para eventos de atualização
+  useEffect(() => {
+    const handleRefresh = () => fetchProjects()
+    
+    eventBus.on(EVENTS.PROJECT_CREATED, handleRefresh)
+    eventBus.on(EVENTS.PROJECT_UPDATED, handleRefresh)
+    eventBus.on(EVENTS.PROJECT_DELETED, handleRefresh)
+    eventBus.on(EVENTS.REFRESH_ALL, handleRefresh)
+
+    return () => {
+      eventBus.off(EVENTS.PROJECT_CREATED, handleRefresh)
+      eventBus.off(EVENTS.PROJECT_UPDATED, handleRefresh)
+      eventBus.off(EVENTS.PROJECT_DELETED, handleRefresh)
+      eventBus.off(EVENTS.REFRESH_ALL, handleRefresh)
+    }
+  }, [fetchProjects])
+
   const createProject = async (projectData: CreateProjectData): Promise<Project> => {
     const response = await fetch('/api/projects', {
       method: 'POST',
@@ -104,10 +122,11 @@ export function useProjects(
       throw new Error(errorData.error || 'Erro ao criar projeto')
     }
 
-    const project = await response.json()
+    const result = await response.json()
+    const project = result.project || result
     
-    // Atualizar lista local
-    await fetchProjects()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.PROJECT_CREATED, project)
     
     return project
   }
@@ -126,10 +145,11 @@ export function useProjects(
       throw new Error(errorData.error || 'Erro ao atualizar projeto')
     }
 
-    const project = await response.json()
+    const result = await response.json()
+    const project = result.project || result
     
-    // Atualizar lista local
-    await fetchProjects()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.PROJECT_UPDATED, project)
     
     return project
   }
@@ -144,8 +164,8 @@ export function useProjects(
       throw new Error(errorData.error || 'Erro ao deletar projeto')
     }
 
-    // Atualizar lista local
-    await fetchProjects()
+    // Emitir evento para atualizar todas as listas
+    eventBus.emit(EVENTS.PROJECT_DELETED, { id })
   }
 
   const refresh = () => {

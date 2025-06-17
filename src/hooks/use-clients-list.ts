@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eventBus, EVENTS } from '@/lib/event-bus'
 
 export interface ClientOption {
   id: string
@@ -18,13 +19,8 @@ export function useClientsList() {
       setLoading(true)
       setError(null)
 
-      console.log('🔍 [useClientsList] Iniciando busca de clientes...')
-      
       // Buscar todos os clientes sem paginação
-      const url = '/api/clients?limit=1000'
-      console.log('📡 [useClientsList] URL:', url)
-      
-      const response = await fetch(url, {
+      const response = await fetch('/api/clients?limit=1000', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -32,18 +28,12 @@ export function useClientsList() {
         credentials: 'include', // Incluir cookies de sessão
       })
       
-      console.log('📊 [useClientsList] Response status:', response.status)
-      console.log('📊 [useClientsList] Response headers:', Object.fromEntries(response.headers.entries()))
-      
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ [useClientsList] Response error text:', errorText)
-        
         let errorMessage = 'Erro ao carregar clientes'
         
         try {
           const errorData = JSON.parse(errorText)
-          console.error('❌ [useClientsList] Parsed error data:', errorData)
           errorMessage = errorData.error || errorMessage
         } catch {
           errorMessage = `Erro ${response.status}: ${response.statusText}`
@@ -53,16 +43,13 @@ export function useClientsList() {
       }
 
       const data = await response.json()
-      console.log('📋 [useClientsList] Response data:', data)
       
       // Verificar se a resposta tem a estrutura esperada
       if (!data || !Array.isArray(data.clients)) {
-        console.warn('⚠️ [useClientsList] Estrutura de resposta inesperada:', data)
+        console.warn('Estrutura de resposta inesperada:', data)
         setClients([])
         return
       }
-      
-      console.log(`✅ [useClientsList] ${data.clients.length} clientes encontrados`)
       
       const mappedClients = data.clients.map((client: { id: string; name: string; company?: string }) => ({
         id: client.id,
@@ -70,7 +57,6 @@ export function useClientsList() {
         company: client.company,
       }))
       
-      console.log('🗺️ [useClientsList] Clientes mapeados:', mappedClients)
       setClients(mappedClients)
     } catch (err) {
       console.error('Erro ao buscar clientes:', err)
@@ -83,6 +69,26 @@ export function useClientsList() {
 
   useEffect(() => {
     fetchClients()
+  }, [])
+
+  // Listener para eventos de atualização
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log('🔄 [useClientsList] Evento recebido, atualizando lista...')
+      fetchClients()
+    }
+    
+    eventBus.on(EVENTS.CLIENT_CREATED, handleRefresh)
+    eventBus.on(EVENTS.CLIENT_UPDATED, handleRefresh)
+    eventBus.on(EVENTS.CLIENT_DELETED, handleRefresh)
+    eventBus.on(EVENTS.REFRESH_ALL, handleRefresh)
+
+    return () => {
+      eventBus.off(EVENTS.CLIENT_CREATED, handleRefresh)
+      eventBus.off(EVENTS.CLIENT_UPDATED, handleRefresh)
+      eventBus.off(EVENTS.CLIENT_DELETED, handleRefresh)
+      eventBus.off(EVENTS.REFRESH_ALL, handleRefresh)
+    }
   }, [])
 
   const refreshClients = () => {

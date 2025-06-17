@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createEbookWorker } from './src/lib/queue'
-import { getRedis } from './src/lib/redis'
+import { createEbookWorker } from './src/lib/queue.js'
+import { getRedis } from './src/lib/redis.js'
 
 async function startWorker() {
   try {

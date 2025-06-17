@@ -44,7 +44,7 @@ export default function ClientsPage() {
       {/* Dialog de Criação */}
       <CreateClientDialog
         open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChangeAction={setIsCreateDialogOpen}
       />
     </div>
   )

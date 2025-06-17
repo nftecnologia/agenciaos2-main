@@ -1,6 +1,8 @@
 // Sistema de queue temporariamente desabilitado para deploy
 // Será reabilitado após configuração completa do Redis em produção
 
+// IMPORTANTE: Dependência bullmq removida temporariamente do package.json
+
 export interface EbookJobData {
   ebookId: string
   agencyId: string

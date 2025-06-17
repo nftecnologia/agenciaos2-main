@@ -1,6 +1,12 @@
 // Rate limiting temporariamente desabilitado para deploy
 // Será reabilitado após configuração completa do Redis em produção
 
+// IMPORTANTE: Dependências Redis removidas temporariamente do package.json
+// - @upstash/ratelimit
+// - @upstash/redis
+// - ioredis
+// - bullmq
+
 // Rate limits temporariamente desabilitados - placeholder para deploy
 export const rateLimits = {
   free: { ai: null, api: null },

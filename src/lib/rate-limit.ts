@@ -4,6 +4,12 @@ import { appErrors } from "@/lib/errors"
 // Rate limiting temporariamente desabilitado para deploy
 // Será reabilitado após configuração completa do Redis em produção
 
+// IMPORTANTE: Dependências Redis removidas temporariamente do package.json
+// - @upstash/ratelimit  
+// - @upstash/redis
+// - ioredis
+// - bullmq
+
 export const rateLimiters = {
   auth: null,
   api: null,

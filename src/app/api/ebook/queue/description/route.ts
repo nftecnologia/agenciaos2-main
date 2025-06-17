@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { ebookId, title, targetAudience, industry } = body
+    const { ebookId, title } = body
 
     if (!ebookId || !title) {
       return NextResponse.json({ 
@@ -32,12 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Adicionar job à fila
-    const job = await addEbookJob({
+    const job = await addEbookJob('description', {
       ebookId,
       agencyId: session.user.agencyId,
-      title,
-      targetAudience,
-      industry,
       step: 'description'
     })
 

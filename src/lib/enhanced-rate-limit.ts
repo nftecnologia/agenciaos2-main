@@ -30,7 +30,7 @@ export async function checkRateLimit(
 }
 
 // Rate limit global para prevenir abuso - temporariamente desabilitado
-export async function checkGlobalRateLimit(identifier: string) {
+export async function checkGlobalRateLimit(_identifier: string) {
   // Retorna sucesso temporariamente para permitir deploy
   return {
     success: true,

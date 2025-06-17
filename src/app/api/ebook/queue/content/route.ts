@@ -32,10 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Adicionar job à fila
-    const job = await addEbookJob({
+    const job = await addEbookJob('content', {
       ebookId,
       agencyId: session.user.agencyId,
-      title: ebook.title,
       step: 'content',
       approvedDescription
     })

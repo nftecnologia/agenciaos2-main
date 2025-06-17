@@ -17,10 +17,10 @@ import { Loader2 } from 'lucide-react'
 
 interface CreateClientDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChangeAction: (open: boolean) => void
 }
 
-export function CreateClientDialog({ open, onOpenChange }: CreateClientDialogProps) {
+export function CreateClientDialog({ open, onOpenChangeAction }: CreateClientDialogProps) {
   const [formData, setFormData] = useState<CreateClientData>({
     name: '',
     email: '',
@@ -63,7 +63,7 @@ export function CreateClientDialog({ open, onOpenChange }: CreateClientDialogPro
         company: '',
       })
       
-      onOpenChange(false)
+      onOpenChangeAction(false)
     } catch (err) {
       console.error('Erro ao criar cliente:', err)
       if (err instanceof Error) {
@@ -82,7 +82,7 @@ export function CreateClientDialog({ open, onOpenChange }: CreateClientDialogPro
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChangeAction}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Novo Cliente</DialogTitle>

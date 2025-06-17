@@ -43,7 +43,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     if (open) {
       refreshClients()
     }
-  }, [open]) // Removido refreshClients das dependências para evitar loop infinito
+  }, [open, refreshClients]) // Removido refreshClients das dependências para evitar loop infinito
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

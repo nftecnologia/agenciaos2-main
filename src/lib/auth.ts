@@ -20,14 +20,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("❌ Credenciais vazias")
           return null
         }
 
         try {
-          console.log("🔍 Buscando usuário no banco Neon:", credentials.email)
-          console.log("🔧 DATABASE_URL sendo usada:", process.env.DATABASE_URL?.substring(0, 30) + '...')
-          
           // Force reconnect to avoid cached connections
           await db.$connect()
           
@@ -38,22 +34,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           })
 
           if (!user || !user.password) {
-            console.log("❌ Usuário não encontrado ou sem senha")
             return null
           }
 
-          console.log("🔑 Verificando senha...")
           const isPasswordValid = await bcrypt.compare(
             credentials.password as string,
             user.password
           )
 
           if (!isPasswordValid) {
-            console.log("❌ Senha inválida")
             return null
           }
-
-          console.log("✅ Login bem-sucedido:", user.email)
           return {
             id: user.id,
             email: user.email,
@@ -63,7 +54,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             agencyId: user.agencyId,
           }
         } catch (error) {
-          console.error("❌ Erro na autenticação:", error)
+          if (process.env.NODE_ENV === 'development') {
+            console.error("Erro na autenticação:", error)
+          }
           return null
         }
       },

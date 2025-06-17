@@ -25,6 +25,7 @@ import {
   DollarSign,
   Brain,
   MessageSquare,
+  BookOpen,
   Settings,
   Menu,
   X,
@@ -76,6 +77,13 @@ const navigation = [
     href: '/chatgpt',
     icon: MessageSquare,
     current: false,
+  },
+  {
+    name: 'Ebooks',
+    href: '/ebook',
+    icon: BookOpen,
+    current: false,
+    badge: 'IA',
   },
 ]
 

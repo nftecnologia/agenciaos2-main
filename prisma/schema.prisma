@@ -40,6 +40,7 @@ model Agency {
   revenues    Revenue[]
   expenses    Expense[]
   aiUsage     AIUsage[]
+  ebooks      Ebook[]
   
   @@map("agencies")
 }
@@ -259,6 +260,39 @@ model AIUsage {
   @@map("ai_usage")
 }
 
+// Ebooks gerados por IA
+model Ebook {
+  id          String      @id @default(cuid())
+  agencyId    String
+  title       String
+  description String?     @db.Text // JSON com descrição detalhada
+  content     String?     @db.Text // JSON com conteúdo completo
+  status      EbookStatus @default(DRAFT)
+  pdfUrl      String?
+  metadata    String?     @db.Text // JSON com metadados
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relacionamentos
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  
+  @@map("ebooks")
+}
+
+// Templates para ebooks
+model EbookTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cssStyles   String   @db.Text
+  htmlLayout  String   @db.Text
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("ebook_templates")
+}
+
 // ============================================================================
 // ENUMS
 // ============================================================================
@@ -287,4 +321,15 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+enum EbookStatus {
+  DRAFT
+  DESCRIPTION_GENERATED
+  DESCRIPTION_APPROVED
+  GENERATING
+  CONTENT_READY
+  GENERATING_PDF
+  COMPLETED
+  ERROR
 }

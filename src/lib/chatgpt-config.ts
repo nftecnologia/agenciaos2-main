@@ -135,12 +135,12 @@ export function isValidModel(modelId: string): boolean {
 export function getOrderedModels() {
   return Object.entries(CHATGPT_CONFIG.MODELS)
     .sort(([,a], [,b]) => {
-      if (a.isLatest) return -1
-      if (b.isLatest) return 1
-      if (a.isRecommended) return -1
-      if (b.isRecommended) return 1
-      if (a.isWebVersion) return -1
-      if (b.isWebVersion) return 1
+      if ('isLatest' in a && a.isLatest) return -1
+      if ('isLatest' in b && b.isLatest) return 1
+      if ('isRecommended' in a && a.isRecommended) return -1
+      if ('isRecommended' in b && b.isRecommended) return 1
+      if ('isWebVersion' in a && a.isWebVersion) return -1
+      if ('isWebVersion' in b && b.isWebVersion) return 1
       return 0
     })
     .map(([id, info]) => ({ id, ...info }))

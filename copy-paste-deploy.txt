@@ -1,0 +1,35 @@
+# 🚀 DEPLOY RAILWAY - COPY & PASTE
+
+# 1. Login
+railway login
+
+# 2. Criar projeto
+railway init
+
+# 3. Adicionar Redis e PostgreSQL
+railway add -d redis
+railway add -d postgresql
+
+# 4. Configurar variáveis
+railway variables set NEXTAUTH_SECRET="iWdh6Di1eZuMSBL1sXrOry2lSAcS+KR2ZGbpzuAG0zc="
+railway variables set NODE_ENV="production"
+railway variables set OPENAI_API_KEY="sk-SUBSTITUA-PELA-SUA-CHAVE-OPENAI"
+
+# 5. Deploy
+railway up
+
+# 6. Ver status e URL
+railway status
+
+# 7. Configurar URL do NextAuth (substitua pela URL real)
+railway variables set NEXTAUTH_URL="https://agenciaos-production.up.railway.app"
+
+# 8. Verificar
+railway logs
+railway open
+
+# 9. WORKER - Configure manualmente no Dashboard:
+# - Acesse https://railway.app
+# - Novo serviço -> GitHub Repo
+# - Start Command: npm run worker
+# - Copie todas as variáveis do web service

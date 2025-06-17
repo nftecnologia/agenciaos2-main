@@ -1,45 +1,14 @@
-import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
 import { NextRequest } from "next/server"
 import { appErrors } from "@/lib/errors"
 
-// Configurar Redis (usar variáveis de ambiente ou fallback para desenvolvimento)
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : undefined
+// Rate limiting temporariamente desabilitado para deploy
+// Será reabilitado após configuração completa do Redis em produção
 
-// Rate limiters para diferentes tipos de endpoints
 export const rateLimiters = {
-  // Rate limiting para autenticação (mais restritivo)
-  auth: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(5, "15 m"), // 5 tentativas por 15 minutos
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para APIs gerais
-  api: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(100, "1 m"), // 100 requests por minuto
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para dashboard (mais permissivo)
-  dashboard: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(200, "1 m"), // 200 requests por minuto
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para IA (muito restritivo)
-  ai: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests por minuto
-    analytics: true,
-  }) : null,
+  auth: null,
+  api: null,
+  dashboard: null,
+  ai: null,
 }
 
 // Função para obter identificador único do cliente

@@ -1,84 +1,36 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+// Rate limiting temporariamente desabilitado para deploy
+// Será reabilitado após configuração completa do Redis em produção
 
-// Configuração do Redis para rate limiting
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
-
-// Rate limits diferenciados por plano
+// Rate limits temporariamente desabilitados - placeholder para deploy
 export const rateLimits = {
-  // Plano FREE
-  free: {
-    ai: new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, '30d'), // 20 usos por mês
-      analytics: true,
-      prefix: 'rate_limit_ai_free',
-    }),
-    api: new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(100, '1h'), // 100 requests por hora
-      analytics: true,
-      prefix: 'rate_limit_api_free',
-    }),
-  },
-  
-  // Plano PRO
-  pro: {
-    ai: new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(500, '30d'), // 500 usos por mês
-      analytics: true,
-      prefix: 'rate_limit_ai_pro',
-    }),
-    api: new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(1000, '1h'), // 1000 requests por hora
-      analytics: true,
-      prefix: 'rate_limit_api_pro',
-    }),
-  },
-  
-  // Rate limit geral para prevenir abuso
-  global: new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(50, '1m'), // 50 requests por minuto
-    analytics: true,
-    prefix: 'rate_limit_global',
-  }),
+  free: { ai: null, api: null },
+  pro: { ai: null, api: null },
+  global: null,
 }
 
-// Função para verificar rate limit baseado no plano
+// Função para verificar rate limit baseado no plano - temporariamente desabilitada
 export async function checkRateLimit(
   agencyId: string,
   plan: 'FREE' | 'PRO',
   type: 'ai' | 'api'
 ) {
-  const planKey = plan.toLowerCase() as 'free' | 'pro'
-  const limiter = rateLimits[planKey][type]
-  
-  const identifier = `${agencyId}:${plan}:${type}`
-  const result = await limiter.limit(identifier)
-  
+  // Retorna sucesso temporariamente para permitir deploy
   return {
-    success: result.success,
-    limit: result.limit,
-    remaining: result.remaining,
-    reset: new Date(result.reset),
+    success: true,
+    limit: plan === 'FREE' ? (type === 'ai' ? 20 : 100) : (type === 'ai' ? 500 : 1000),
+    remaining: plan === 'FREE' ? (type === 'ai' ? 20 : 100) : (type === 'ai' ? 500 : 1000),
+    reset: new Date(Date.now() + 60 * 60 * 1000),
   }
 }
 
-// Rate limit global para prevenir abuso
+// Rate limit global para prevenir abuso - temporariamente desabilitado
 export async function checkGlobalRateLimit(identifier: string) {
-  const result = await rateLimits.global.limit(identifier)
-  
+  // Retorna sucesso temporariamente para permitir deploy
   return {
-    success: result.success,
-    limit: result.limit,
-    remaining: result.remaining,
-    reset: new Date(result.reset),
+    success: true,
+    limit: 50,
+    remaining: 50,
+    reset: new Date(Date.now() + 60 * 1000),
   }
 }
 

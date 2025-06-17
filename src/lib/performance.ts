@@ -11,10 +11,10 @@ export const lazyLoadAgent = (agentName: string) => {
 
 // Performance monitoring
 export const trackPerformance = (name: string, fn: () => Promise<unknown>) => {
-  return async (...args: unknown[]) => {
+  return async () => {
     const start = performance.now()
     try {
-      const result = await fn(...args)
+      const result = await fn()
       const end = performance.now()
       
       if (process.env.NODE_ENV === 'development') {

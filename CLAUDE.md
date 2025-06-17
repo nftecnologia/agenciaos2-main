@@ -861,3 +861,21 @@ O Claude Code deve simplesmente:
 2. **Mostrar o resultado** da execução
 3. **Continuar** com a próxima etapa
 4. **Apenas para deleções**: "Este comando irá deletar [arquivo/pasta]. Deseja continuar?"
+
+## 🧠 Modo Ultrathink - Execução Simultânea de Tasks
+
+### **⚡ Ativação do Modo Ultrathink**
+Quando o usuário sinalizar que precisa do **"modelo ultrathink"**, o Claude Code deve automaticamente:
+
+#### **🔥 EXECUÇÃO SIMULTÂNEA OBRIGATÓRIA**
+- **EXECUTAR TODAS as tasks simultaneamente** em uma única resposta
+- **USAR MÚLTIPLAS chamadas de ferramentas** em paralelo
+- **MAXIMIZAR paralelismo** para performance otimizada
+- **NÃO AGUARDAR** uma task terminar para iniciar outra
+
+#### **Padrão de Execução Ultrathink**
+```typescript
+// ✅ CORRETO - Execução simultânea no modo ultrathink:
+<function_calls>
+<invoke name="Read">
+  <parameter name="file_path">arquivo1.ts

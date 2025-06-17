@@ -33,11 +33,11 @@ export const trackPerformance = (name: string, fn: () => Promise<unknown>) => {
 }
 
 // Memoização para componentes pesados  
-export const memoizeComponent = <T extends React.ComponentType<Record<string, unknown>>>(
-  Component: T,
-  areEqual?: (prevProps: Record<string, unknown>, nextProps: Record<string, unknown>) => boolean
-): T => {
-  return React.memo(Component, areEqual) as T
+export const memoizeComponent = <P extends Record<string, unknown>>(
+  Component: React.ComponentType<P>,
+  areEqual?: (prevProps: P, nextProps: P) => boolean
+) => {
+  return React.memo(Component, areEqual)
 }
 
 // Debounce para inputs

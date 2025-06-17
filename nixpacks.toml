@@ -1,13 +1,12 @@
 [variables]
 NODE_ENV = "production"
-REDIS_URL = ""
 SKIP_ENV_VALIDATION = "1"
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x"]
+nixPkgs = ["nodejs_20", "npm-9_x", "chromium"]
 
 [phases.install]
-cmds = ["npm ci --omit=dev"]
+cmds = ["npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/db'
+import { db } from '@/lib/db'
 import { addEbookJob } from '@/lib/queue'
 
 export async function POST(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar se o ebook existe e pertence à agência
-    const ebook = await prisma.ebook.findFirst({
+    const ebook = await db.ebook.findFirst({
       where: {
         id: ebookId,
         agencyId: session.user.agencyId
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Atualizar status do ebook
-    await prisma.ebook.update({
+    await db.ebook.update({
       where: { id: ebookId },
       data: { 
         status: 'DESCRIPTION_GENERATED',

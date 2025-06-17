@@ -22,8 +22,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobI
       return NextResponse.json({ error: 'Job não encontrado' }, { status: 404 })
     }
 
-    // Verificar se o job pertence à agência do usuário
-    if (jobStatus.data.agencyId !== session.user.agencyId) {
+    // Verificar se o job pertence à agência do usuário (se data disponível)
+    if (jobStatus.data && jobStatus.data.agencyId !== session.user.agencyId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
     }
 

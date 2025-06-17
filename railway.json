@@ -9,10 +9,6 @@
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   },
-  "processes": {
-    "web": "npm start",
-    "worker": "npm run worker"
-  },
   "environments": {
     "production": {
       "variables": {

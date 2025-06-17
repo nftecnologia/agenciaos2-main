@@ -1,0 +1,15 @@
+[variables]
+NODE_ENV = "production"
+SKIP_ENV_VALIDATION = "1"
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x", "chromium"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["echo 'Worker build - skipping Next.js build'"]
+
+[start]
+cmd = "npm run worker"

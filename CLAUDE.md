@@ -876,6 +876,30 @@ Quando o usuário sinalizar que precisa do **"modelo ultrathink"**, o Claude Cod
 #### **Padrão de Execução Ultrathink**
 ```typescript
 // ✅ CORRETO - Execução simultânea no modo ultrathink:
+// Exemplo: Read múltiplos arquivos + comandos bash + edições simultaneamente
 <function_calls>
 <invoke name="Read">
-  <parameter name="file_path">arquivo1.ts
+<parameter name="file_path">src/components/exemplo1.tsx
+
+#### **Padrão de Execução Ultrathink**
+```typescript
+// ✅ CORRETO - Execução simultânea no modo ultrathink:
+<function_calls>
+<invoke name="Read">
+  <parameter name="file_path">arquivo1.ts## 🧠 Modo Ultrathink - Execução Simultânea de Tasks
+
+### **⚡ Ativação do Modo Ultrathink**
+Quando o usuário sinalizar que precisa do **"modelo ultrathink"**, o Claude Code deve automaticamente:
+
+#### **🔥 EXECUÇÃO SIMULTÂNEA OBRIGATÓRIA**
+- **EXECUTAR TODAS as tasks simultaneamente** em uma única resposta
+- **USAR MÚLTIPLAS chamadas de ferramentas** em paralelo
+- **MAXIMIZAR paralelismo** para performance otimizada
+- **NÃO AGUARDAR** uma task terminar para iniciar outra
+
+#### **Padrão de Execução Ultrathink**
+```xml
+✅ CORRETO - Execução simultânea no modo ultrathink:
+<function_calls>
+<invoke name="Read">
+<parameter name="file_path">src/components/exemplo1.tsx

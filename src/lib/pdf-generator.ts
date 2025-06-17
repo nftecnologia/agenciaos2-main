@@ -1,18 +1,7 @@
-// Dynamic import for Puppeteer to avoid build issues in production
-let puppeteer: any = null;
+// PDF Generator temporariamente desabilitado para deploy
+// Será reabilitado após configuração completa do Puppeteer em produção
 
-async function getPuppeteer() {
-  if (!puppeteer) {
-    try {
-      puppeteer = await import('puppeteer');
-      return puppeteer.default || puppeteer;
-    } catch (error) {
-      console.error('Puppeteer not available:', error);
-      return null;
-    }
-  }
-  return puppeteer;
-}
+// IMPORTANTE: Dependência puppeteer removida temporariamente do package.json
 import { EbookContent, EbookDescription } from './ebook-service'
 
 export interface PDFGenerationOptions {
@@ -24,90 +13,16 @@ export interface PDFGenerationOptions {
 export class PDFGenerator {
   
   /**
-   * Gera PDF do ebook usando Puppeteer
+   * Gera PDF do ebook - temporariamente desabilitado
    */
-  static async generateEbookPDF(params: {
+  static async generateEbookPDF(_params: {
     title: string
     description: EbookDescription
     content: EbookContent
     options?: PDFGenerationOptions
   }): Promise<Buffer> {
-    const { title, description, content, options = {} } = params
-    
-    const template = options.template || 'professional'
-    const primaryColor = options.primaryColor || '#2563eb'
-    const font = options.font || 'inter'
-
-    const htmlContent = this.buildHTMLContent({
-      title,
-      description,
-      content,
-      template,
-      primaryColor,
-      font
-    })
-
-    try {
-      const puppeteerInstance = await getPuppeteer();
-      
-      if (!puppeteerInstance) {
-        throw new Error('Puppeteer is not available in this environment');
-      }
-
-      const browser = await puppeteerInstance.launch({
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu'
-        ]
-      })
-
-      const page = await browser.newPage()
-      
-      // Configurar viewport e timeouts
-      await page.setViewport({ width: 1200, height: 1600 })
-      await page.setDefaultTimeout(30000)
-      
-      // Carregar conteúdo HTML
-      await page.setContent(htmlContent, { 
-        waitUntil: 'networkidle0',
-        timeout: 30000
-      })
-
-      // Gerar PDF
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: {
-          top: '0.75in',
-          right: '0.75in',
-          bottom: '0.75in',
-          left: '0.75in'
-        },
-        printBackground: true,
-        displayHeaderFooter: true,
-        headerTemplate: ' ',
-        footerTemplate: `
-          <div style="font-size: 10px; text-align: center; width: 100%; color: #666; font-family: Inter, sans-serif;">
-            <span class="pageNumber"></span> de <span class="totalPages"></span>
-          </div>
-        `,
-        preferCSSPageSize: false
-      })
-
-      await browser.close()
-      return Buffer.from(pdfBuffer)
-
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      throw new Error('Erro ao gerar PDF do ebook')
-    }
+    // PDF generation temporariamente desabilitado para deploy
+    throw new Error('Geração de PDF temporariamente indisponível. Configuração do Puppeteer em andamento.')
   }
 
   /**

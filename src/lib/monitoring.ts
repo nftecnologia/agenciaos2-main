@@ -149,7 +149,7 @@ export function trackWebVitals() {
           }
           break
         case 'first-input':
-          if (process.env.NODE_ENV === 'development') {
+          if (process.env.NODE_ENV === 'development' && metric.processingStart) {
             console.log(`📈 FID: ${metric.processingStart - metric.startTime}ms`)
           }
           break

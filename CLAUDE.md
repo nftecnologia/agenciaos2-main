@@ -580,10 +580,15 @@ const newClient = await db.client.create({
 - **State**: Sempre usar React Query para cliente
 - **API**: Sempre usar Server Actions ou API Routes
 
-### 🤖 Automação de Comandos Bash - NUNCA PERGUNTAR
+### 🤖 Automação de Comandos Bash - AUTO-APROVAÇÃO TOTAL
 
-#### **REGRA ABSOLUTA: SEMPRE USAR FLAGS DE AUTO-CONFIRMAÇÃO**
-**JAMAIS pedir confirmação manual ao usuário. SEMPRE assumir "yes" automaticamente.**
+#### **REGRA ABSOLUTA: AUTO-APROVAÇÃO AUTOMÁTICA**
+**JAMAIS pedir confirmação manual ao usuário. EXECUTAR automaticamente todos os comandos, exceto deleções.**
+
+#### **🚨 ÚNICA EXCEÇÃO: Comandos de Deleção**
+- `rm`, `rmdir`, `git rm`, `npm uninstall` - SEMPRE perguntar antes
+- Qualquer comando que remove arquivos ou dados
+- Comandos destrutivos que não podem ser revertidos
 
 #### Auto-Aceitar Prompts Comuns
 ```bash
@@ -718,10 +723,11 @@ prisma db push              # Sem --accept-data-loss
 
 ### 📋 Regras de Execução
 
-#### **Comandos Bash - AUTOMAÇÃO TOTAL**
-- ⛔ **NUNCA** pedir confirmação manual para QUALQUER comando
-- ⛔ **NUNCA** perguntar "Deseja continuar?"
-- ⛔ **NUNCA** esperar input do usuário
+#### **Comandos Bash - AUTO-APROVAÇÃO TOTAL**
+- 🤖 **EXECUTAR AUTOMATICAMENTE** todos os comandos (exceto deleções)
+- 🤖 **JAMAIS** pedir confirmação para instalações, builds, pushes
+- 🤖 **JAMAIS** perguntar "Deseja continuar?" ou "Confirma?"
+- 🤖 **JAMAIS** esperar input do usuário
 - ✅ **SEMPRE** usar flags de auto-confirmação em TODOS os comandos
 - ✅ **SEMPRE** assumir "yes" para instalações, atualizações, overwrites
 - ✅ **SEMPRE** aceitar data loss em desenvolvimento
@@ -729,6 +735,14 @@ prisma db push              # Sem --accept-data-loss
 - ✅ **SEMPRE** usar `--no-verify` para commits em desenvolvimento
 - ✅ **SEMPRE** usar `--overwrite` para shadcn components
 - ✅ **SEMPRE** usar `--silent` para reduzir output quando possível
+
+#### **⚡ EXECUÇÃO INSTANTÂNEA**
+Executar imediatamente sem perguntar:
+- `npm install`, `npm update`, `npm run build`
+- `git add`, `git commit`, `git push`
+- `prisma db push`, `prisma generate`
+- `npx shadcn@latest add`
+- Qualquer comando de desenvolvimento
 
 #### **Exemplos de Automação Obrigatória**
 ```bash
@@ -746,12 +760,36 @@ git commit -m "feat: add button"     # Faltou --no-verify
 prisma db push                       # Faltou --accept-data-loss
 ```
 
+#### **🚨 ÚNICA EXCEÇÃO - Comandos de Deleção (SEMPRE PERGUNTAR)**
+```bash
+# ⚠️ SEMPRE perguntar antes de executar:
+rm arquivo.txt                    # Deletar arquivo
+rm -rf pasta/                     # Deletar pasta
+git rm arquivo.txt                # Remover do git
+npm uninstall pacote              # Desinstalar pacote
+rmdir pasta/                      # Remover diretório
+```
+
+#### **🤖 AUTO-EXECUÇÃO (NUNCA PERGUNTAR)**
+```bash
+# ✅ Executar automaticamente SEM confirmação:
+npm install pacote --save --yes
+npm run build --silent
+git add . --all
+git commit -m "message" --no-verify
+git push origin main --force-with-lease
+prisma db push --accept-data-loss
+npx shadcn@latest add button --yes --overwrite
+npm update --yes
+```
+
 #### **Tratamento de Prompts do Sistema**
-- **npm**: Sempre usar `--yes` ou `npm config set assume-yes true`
-- **git**: Sempre usar `--no-verify` e `--no-edit`
-- **prisma**: Sempre usar `--accept-data-loss` em desenvolvimento
-- **shadcn**: Sempre usar `--yes --overwrite`
-- **rm/mv/cp**: Sempre usar `--force` quando apropriado
+- **npm**: Sempre usar `--yes` - EXECUTAR automaticamente
+- **git**: Sempre usar `--no-verify` e `--no-edit` - EXECUTAR automaticamente  
+- **prisma**: Sempre usar `--accept-data-loss` - EXECUTAR automaticamente
+- **shadcn**: Sempre usar `--yes --overwrite` - EXECUTAR automaticamente
+- **mv/cp**: Sempre usar `--force` - EXECUTAR automaticamente
+- **rm**: SEMPRE perguntar ao usuário antes de executar
 
 #### Implementação - Sempre Contextual
 - NUNCA implementar sem ler arquivos existentes
@@ -768,3 +806,58 @@ Com estas regras, o Claude Code deve:
 3. **Automatizar comandos** para fluxo de desenvolvimento eficiente
 4. **Manter consistência** com padrões existentes do AgênciaOS
 5. **Garantir qualidade** através de validações obrigatórias
+
+## ⚡ Implementação da Auto-Aprovação
+
+### **🤖 Comportamento Obrigatório do Claude Code**
+
+#### **✅ EXECUTAR AUTOMATICAMENTE (Sem perguntar)**
+```bash
+# Desenvolvimento
+npm install lodash --save --yes          # ✅ Executar
+npm run dev                             # ✅ Executar  
+npm run build --silent                 # ✅ Executar
+npm update --yes                        # ✅ Executar
+
+# Git
+git add . --all                         # ✅ Executar
+git commit -m "message" --no-verify     # ✅ Executar
+git push origin main --force-with-lease # ✅ Executar
+
+# Prisma
+prisma db push --accept-data-loss       # ✅ Executar
+prisma generate --no-engine            # ✅ Executar
+
+# Shadcn
+npx shadcn@latest add button --yes --overwrite  # ✅ Executar
+
+# Outros
+mkdir nova-pasta                        # ✅ Executar
+mv arquivo.txt nova-pasta/              # ✅ Executar
+cp arquivo.txt backup.txt               # ✅ Executar
+```
+
+#### **⚠️ PERGUNTAR SEMPRE (Comandos destrutivos)**
+```bash
+# Deleções - SEMPRE confirmar com usuário
+rm arquivo.txt                          # ⚠️ Perguntar
+rm -rf pasta/                           # ⚠️ Perguntar  
+git rm arquivo.txt                      # ⚠️ Perguntar
+npm uninstall pacote                    # ⚠️ Perguntar
+rmdir pasta/                            # ⚠️ Perguntar
+```
+
+### **📝 Frases Proibidas**
+O Claude Code NUNCA deve dizer:
+- "Deseja que eu execute este comando?"
+- "Posso prosseguir com a instalação?"
+- "Devo fazer o commit agora?"
+- "Quer que eu continue?"
+- "Confirma a execução?"
+
+### **📝 Comportamento Correto**
+O Claude Code deve simplesmente:
+1. **Executar o comando** automaticamente
+2. **Mostrar o resultado** da execução
+3. **Continuar** com a próxima etapa
+4. **Apenas para deleções**: "Este comando irá deletar [arquivo/pasta]. Deseja continuar?"

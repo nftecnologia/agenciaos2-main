@@ -146,7 +146,7 @@ export function CreateClientDialog({ open, onOpenChangeAction }: CreateClientDia
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => onOpenChangeAction(false)}
               disabled={loading}
             >
               Cancelar

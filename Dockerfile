@@ -1,5 +1,5 @@
-# Use Node.js 20 Alpine for smaller size
-FROM node:20-alpine AS deps
+# Use Node.js 20 Alpine
+FROM node:20-alpine
 
 # Install dependencies for Puppeteer
 RUN apk add --no-cache \
@@ -9,12 +9,12 @@ RUN apk add --no-cache \
     freetype-dev \
     harfbuzz \
     ca-certificates \
-    ttf-freefont \
-    && rm -rf /var/cache/apk/*
+    ttf-freefont
 
-# Tell Puppeteer to skip installing Chromium. We'll be using the installed package.
+# Configure Puppeteer to use system Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_ENV=production
 
 WORKDIR /app
 
@@ -22,58 +22,19 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci
 
-# Production stage
-FROM node:20-alpine AS builder
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-WORKDIR /app
+# Copy application code
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
 
-# Generate Prisma client and build
+# Generate Prisma client
 RUN npx prisma generate
+
+# Build the application
 RUN npm run build
 
-# Runtime stage
-FROM node:20-alpine AS runner
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    && addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
-
-ENV NODE_ENV=production \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-WORKDIR /app
-
-USER nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-
+# Expose port
 EXPOSE 3000
 
-ENV PORT=3000
-
-CMD ["node", "server.js"]
+# Start the application
+CMD ["npm", "start"]

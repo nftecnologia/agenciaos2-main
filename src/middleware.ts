@@ -18,8 +18,13 @@ export function middleware(request: NextRequest) {
   }
 
   // Rotas públicas
-  const publicRoutes = ['/auth/signin', '/auth/signup']
+  const publicRoutes = ['/auth/signin', '/auth/signup', '/setup']
   if (publicRoutes.includes(pathname)) {
+    return NextResponse.next()
+  }
+
+  // Permitir rota de setup API
+  if (pathname === '/api/setup') {
     return NextResponse.next()
   }
 

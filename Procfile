@@ -1,2 +1,3 @@
 web: npm start
-worker: ./start-worker.sh
+worker: npm run worker
+release: echo "Release phase"

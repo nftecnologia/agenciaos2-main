@@ -172,10 +172,8 @@ export const rateLimitConfig = {
   }
 }
 
-// Verificar se rate limiting está habilitado
+// Verificar se rate limiting está habilitado - temporariamente desabilitado
 export function isRateLimitEnabled(): boolean {
-  const env = process.env.NODE_ENV || 'development'
-  const config = rateLimitConfig[env as keyof typeof rateLimitConfig]
-  
-  return config?.enabled && !!redis
+  // Retorna false temporariamente enquanto Redis está desabilitado
+  return false
 }

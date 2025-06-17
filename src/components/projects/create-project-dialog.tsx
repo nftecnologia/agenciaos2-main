@@ -145,6 +145,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Carregando clientes...</span>
                 </div>
+              ) : clients.length === 0 ? (
+                <div className="text-sm text-muted-foreground p-3 border rounded-md bg-yellow-50">
+                  Nenhum cliente encontrado. Crie um cliente primeiro antes de criar um projeto.
+                </div>
               ) : (
                 <SimpleSelect
                   value={formData.clientId}
@@ -224,7 +228,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || clientsLoading}>
+            <Button type="submit" disabled={loading || clientsLoading || clients.length === 0}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Criar Projeto
             </Button>

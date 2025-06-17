@@ -19,21 +19,48 @@ export function useClientsList() {
       setError(null)
 
       // Buscar todos os clientes sem paginação
-      const response = await fetch('/api/clients?limit=1000')
+      const response = await fetch('/api/clients?limit=1000', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Incluir cookies de sessão
+      })
       
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao carregar clientes')
+        const errorText = await response.text()
+        let errorMessage = 'Erro ao carregar clientes'
+        
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          errorMessage = `Erro ${response.status}: ${response.statusText}`
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
-      setClients(data.clients.map((client: { id: string; name: string; company?: string }) => ({
+      
+      // Verificar se a resposta tem a estrutura esperada
+      if (!data || !Array.isArray(data.clients)) {
+        console.warn('Estrutura de resposta inesperada:', data)
+        setClients([])
+        return
+      }
+      
+      const mappedClients = data.clients.map((client: { id: string; name: string; company?: string }) => ({
         id: client.id,
         name: client.name,
         company: client.company,
-      })))
+      }))
+      
+      setClients(mappedClients)
     } catch (err) {
+      console.error('Erro ao buscar clientes:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      setClients([]) // Garantir que lista fica vazia em caso de erro
     } finally {
       setLoading(false)
     }

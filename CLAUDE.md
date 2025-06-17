@@ -580,48 +580,103 @@ const newClient = await db.client.create({
 - **State**: Sempre usar React Query para cliente
 - **API**: Sempre usar Server Actions ou API Routes
 
-### 🤖 Automação de Comandos Bash
+### 🤖 Automação de Comandos Bash - NUNCA PERGUNTAR
+
+#### **REGRA ABSOLUTA: SEMPRE USAR FLAGS DE AUTO-CONFIRMAÇÃO**
+**JAMAIS pedir confirmação manual ao usuário. SEMPRE assumir "yes" automaticamente.**
 
 #### Auto-Aceitar Prompts Comuns
 ```bash
-# Sempre usar flags de auto-confirmação:
+# SEMPRE usar flags de auto-confirmação em TODOS os comandos:
 npm install --yes
-npx shadcn@latest add button --yes
+npm install [package] --save --yes
+npm install [package] --save-dev --yes
+npx shadcn@latest add [component] --yes --overwrite
 git add . --all
+git commit -m "message" --no-verify
+git push origin main --force-with-lease
 prisma db push --accept-data-loss
+prisma generate --no-engine
 npm run build --silent
 ```
 
 #### Comandos Bash Otimizados para AgênciaOS
 ```bash
-# Desenvolvimento
-npm run dev                    # Iniciar desenvolvimento
-npm run db:push               # Aplicar mudanças do schema
-npm run db:studio             # Abrir Prisma Studio
+# Desenvolvimento (sempre automático)
+npm run dev                                    # Iniciar desenvolvimento
+npm run db:push                               # Aplicar mudanças do schema
+npm run db:studio                             # Abrir Prisma Studio
 
-# Instalação de dependências (sempre com --yes)
+# Instalação de dependências (SEMPRE com --yes)
 npm install [package] --save --yes
 npm install [package] --save-dev --yes
+npm update --yes
+npm audit fix --yes
+npm cache clean --force --yes
 
-# Shadcn UI (sempre com --yes)
+# Shadcn UI (SEMPRE com --yes --overwrite)
 npx shadcn@latest add [component] --yes --overwrite
+npx shadcn@latest init --yes --overwrite
 
-# Git (sempre aceitar mudanças)
-git add . && git commit -m "message" --no-verify
+# Git (SEMPRE aceitar mudanças, NUNCA perguntar)
+git add . --all
+git commit -m "message" --no-verify
 git push origin main --force-with-lease
+git pull origin main --no-verify
+git merge [branch] --no-verify --no-edit
+git rebase [branch] --no-verify
 
-# Prisma (sempre aceitar data loss em dev)
+# Prisma (SEMPRE aceitar data loss em desenvolvimento)
 prisma db push --accept-data-loss --skip-generate
 prisma generate --no-engine
+prisma migrate dev --name [name] --skip-generate
+prisma migrate reset --force --skip-generate
+
+# Next.js e Build (SEMPRE silencioso)
+npm run build --silent
+npm run start --silent
+npm run lint --fix --silent
+
+# Outros comandos (SEMPRE automático)
+rm -rf node_modules --force
+mkdir -p [directory] --parents
+cp [source] [dest] --force --recursive
+mv [source] [dest] --force
 ```
 
-#### Flags de Automação Obrigatórias
-- `--yes` ou `-y`: Auto-aceitar instalações
+#### **FLAGS OBRIGATÓRIAS EM TODOS OS COMANDOS**
+- `--yes` ou `-y`: Auto-aceitar instalações e atualizações
 - `--overwrite`: Sobrescrever arquivos existentes
 - `--no-verify`: Pular hooks de git em desenvolvimento
 - `--accept-data-loss`: Aceitar perda de dados em dev
-- `--silent`: Suprimir outputs verbosos
+- `--silent`: Suprimir outputs verbosos desnecessários
 - `--force-with-lease`: Push seguro com força
+- `--force`: Forçar operações quando necessário
+- `--no-edit`: Evitar editores interativos
+- `--skip-generate`: Pular gerações desnecessárias
+
+#### **AUTOMAÇÃO COMPLETA - NUNCA INTERATIVO**
+```bash
+# Exemplos de comandos que DEVEM ser executados automaticamente:
+
+# ✅ CORRETO (automático):
+npm install react-query --save --yes
+npx shadcn@latest add dialog --yes --overwrite
+git add . && git commit -m "feat: add dialog" --no-verify
+prisma db push --accept-data-loss
+
+# ❌ ERRADO (nunca fazer):
+npm install react-query     # Sem --yes
+npx shadcn@latest add dialog # Sem flags
+git commit -m "message"      # Sem --no-verify
+prisma db push              # Sem --accept-data-loss
+```
+
+#### **TRATAMENTO DE ERROS EM BASH**
+- Se comando falhar, tentar com flags adicionais
+- Se ainda falhar, reportar erro mas NÃO pedir confirmação
+- SEMPRE usar `|| true` para comandos não críticos
+- SEMPRE usar `; exit 0` para evitar falhas desnecessárias
 
 ### 🧠 Processo de Pensamento Estruturado
 
@@ -663,12 +718,40 @@ prisma generate --no-engine
 
 ### 📋 Regras de Execução
 
-#### Comandos Bash - Sempre Automáticos
-- NUNCA pedir confirmação manual para comandos de desenvolvimento
-- SEMPRE usar flags de auto-confirmação
-- SEMPRE assumir "yes" para instalações de dependências
-- SEMPRE aceitar overwrites de arquivos de configuração
-- SEMPRE usar force-with-lease para pushes quando necessário
+#### **Comandos Bash - AUTOMAÇÃO TOTAL**
+- ⛔ **NUNCA** pedir confirmação manual para QUALQUER comando
+- ⛔ **NUNCA** perguntar "Deseja continuar?"
+- ⛔ **NUNCA** esperar input do usuário
+- ✅ **SEMPRE** usar flags de auto-confirmação em TODOS os comandos
+- ✅ **SEMPRE** assumir "yes" para instalações, atualizações, overwrites
+- ✅ **SEMPRE** aceitar data loss em desenvolvimento
+- ✅ **SEMPRE** usar `--force-with-lease` para pushes
+- ✅ **SEMPRE** usar `--no-verify` para commits em desenvolvimento
+- ✅ **SEMPRE** usar `--overwrite` para shadcn components
+- ✅ **SEMPRE** usar `--silent` para reduzir output quando possível
+
+#### **Exemplos de Automação Obrigatória**
+```bash
+# ✅ SEMPRE fazer assim (automático):
+npm install lodash --save --yes
+npx shadcn@latest add button --yes --overwrite  
+git add . && git commit -m "feat: add button" --no-verify
+prisma db push --accept-data-loss --skip-generate
+npm run build --silent
+
+# ⛔ NUNCA fazer assim (interativo):
+npm install lodash                    # Faltou --yes
+npx shadcn@latest add button         # Faltou flags
+git commit -m "feat: add button"     # Faltou --no-verify
+prisma db push                       # Faltou --accept-data-loss
+```
+
+#### **Tratamento de Prompts do Sistema**
+- **npm**: Sempre usar `--yes` ou `npm config set assume-yes true`
+- **git**: Sempre usar `--no-verify` e `--no-edit`
+- **prisma**: Sempre usar `--accept-data-loss` em desenvolvimento
+- **shadcn**: Sempre usar `--yes --overwrite`
+- **rm/mv/cp**: Sempre usar `--force` quando apropriado
 
 #### Implementação - Sempre Contextual
 - NUNCA implementar sem ler arquivos existentes

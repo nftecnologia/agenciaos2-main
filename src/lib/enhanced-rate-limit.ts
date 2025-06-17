@@ -135,10 +135,6 @@ export function createRateLimitMiddleware(type: 'ai' | 'api') {
 export async function getRateLimitStats(agencyId: string, plan: 'FREE' | 'PRO') {
   const planKey = plan.toLowerCase() as 'free' | 'pro'
   
-  // Obter estatísticas usando prefix direto
-  const aiIdentifier = `${agencyId}:${plan}:ai`
-  const apiIdentifier = `${agencyId}:${plan}:api`
-  
   // Simular limites baseados no plano
   const limits = {
     free: { ai: 20, api: 100 },

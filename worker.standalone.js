@@ -12,30 +12,35 @@ try {
   const Redis = require('ioredis')
   const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
   
-  console.log('🔗 Verificando Redis URL:', redisUrl ? redisUrl.substring(0, 20) + '...' : 'NÃO CONFIGURADO')
+  console.log('🔗 REDIS_URL completa:', redisUrl)
+  console.log('🔗 Todas as env vars Redis:')
+  console.log('  REDIS_URL:', process.env.REDIS_URL)
+  console.log('  REDISCLOUD_URL:', process.env.REDISCLOUD_URL)
+  console.log('  REDIS_PRIVATE_URL:', process.env.REDIS_PRIVATE_URL)
   
   if (!redisUrl) {
     throw new Error('REDIS_URL não configurado')
   }
   
+  // Forçar uso da URL do Railway
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
-    connectTimeout: 10000,
+    connectTimeout: 20000,
     family: 4, // IPv4
+    enableOfflineQueue: false,
+    retryConnectOnFailover: true,
   })
   
-  console.log('✅ Redis configurado')
+  console.log('✅ Redis configurado com URL:', redisUrl)
 } catch (error) {
   console.error('❌ Erro configurando Redis:', error.message)
   process.exit(1)
 }
 
 // Configuração da fila - usar URL diretamente para evitar problemas
-const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
-console.log('🔗 BullMQ usando Redis:', redisUrl ? redisUrl.substring(0, 30) + '...' : 'NÃO CONFIGURADO')
-
-const redisConnection = redisUrl
+const redisUrlForBullMQ = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
+console.log('🔗 BullMQ usando Redis URL completa:', redisUrlForBullMQ)
 
 // Testar conexão Redis antes de criar worker
 async function testRedisConnection() {
@@ -81,9 +86,11 @@ const ebookWorker = new Worker('ebook-generation', async (job) => {
       throw new Error(`Step desconhecido: ${job.data.step}`)
   }
 }, {
-  // Usar URL do Redis diretamente
-  connection: redisUrl,
+  // Usar URL do Redis do Railway diretamente - sem fallback para localhost
+  connection: redisUrlForBullMQ,
   concurrency: 2,
+  removeOnComplete: 10,
+  removeOnFail: 5,
 })
 
 // Testar conexão antes de iniciar

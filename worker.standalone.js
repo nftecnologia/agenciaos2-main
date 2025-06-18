@@ -37,7 +37,18 @@ console.log('🔗 BullMQ usando Redis:', redisUrl ? redisUrl.substring(0, 30) + 
 
 const redisConnection = redisUrl
 
-// Criar worker
+// Testar conexão Redis antes de criar worker
+async function testRedisConnection() {
+  try {
+    await redis.ping()
+    console.log('✅ Redis conectado com sucesso!')
+  } catch (error) {
+    console.error('❌ Falha ao conectar Redis:', error.message)
+    throw error
+  }
+}
+
+// Criar worker com configuração explícita do Redis
 const ebookWorker = new Worker('ebook-generation', async (job) => {
   console.log(`📝 Processando job ${job.id}: ${job.data.step}`)
   
@@ -70,8 +81,15 @@ const ebookWorker = new Worker('ebook-generation', async (job) => {
       throw new Error(`Step desconhecido: ${job.data.step}`)
   }
 }, {
-  connection: redisConnection,
+  // Usar URL do Redis diretamente
+  connection: redisUrl,
   concurrency: 2,
+})
+
+// Testar conexão antes de iniciar
+testRedisConnection().catch(error => {
+  console.error('❌ Não foi possível conectar ao Redis:', error.message)
+  process.exit(1)
 })
 
 ebookWorker.on('completed', (job) => {

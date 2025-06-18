@@ -5,7 +5,13 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  images: {
+    domains: ['files.markupgo.com'],
+  },
+  experimental: {
+    serverComponentsExternalPackages: ["puppeteer"]
   }
 }
 
-module.exports = nextConfig
+module.exports = nextConfig 

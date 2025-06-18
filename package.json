@@ -1,10 +1,10 @@
 {
-  "name": "agenciaos-worker-simple",
-  "version": "0.1.0",
+  "name": "agenciaos-fresh-worker",
+  "version": "0.2.0",
   "private": true,
-  "main": "worker-simple.js",
+  "main": "fresh-worker.js",
   "scripts": {
-    "start": "node worker-simple.js"
+    "start": "node fresh-worker.js"
   },
   "dependencies": {}
 }

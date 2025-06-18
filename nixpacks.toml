@@ -11,4 +11,4 @@ cmds = ["npm install --omit=dev"]
 cmds = ["echo 'Worker - pulando build phase'"]
 
 [start]
-cmd = "node worker.standalone.js"
+cmd = "node worker-simple.js"

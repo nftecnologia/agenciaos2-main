@@ -1,15 +1,11 @@
 [variables]
 NODE_ENV = "production"
-SKIP_ENV_VALIDATION = "1"
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x", "chromium"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm ci"]
-
-[phases.build]
-cmds = ["npm run build"]
+cmds = ["npm install --omit=dev"]
 
 [start]
-cmd = "npm start"
+cmd = "node worker.standalone.js"

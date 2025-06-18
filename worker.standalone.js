@@ -53,6 +53,33 @@ async function testRedisConnection() {
   }
 }
 
+// Parse da URL do Redis para configuração explícita
+const Redis = require('ioredis')
+const redisUrlParsed = new URL(redisUrlForBullMQ)
+
+console.log('🔧 Redis URL parseada:')
+console.log('  hostname:', redisUrlParsed.hostname)
+console.log('  port:', redisUrlParsed.port)
+console.log('  password:', redisUrlParsed.password ? '***' : 'sem senha')
+
+// Configuração explícita do Redis para BullMQ
+const redisConfig = {
+  host: redisUrlParsed.hostname,
+  port: parseInt(redisUrlParsed.port),
+  password: redisUrlParsed.password,
+  db: 0,
+  maxRetriesPerRequest: 3,
+  connectTimeout: 20000,
+  family: 4,
+  enableOfflineQueue: false,
+}
+
+console.log('🔧 Configuração Redis para BullMQ:', {
+  host: redisConfig.host,
+  port: redisConfig.port,
+  hasPassword: !!redisConfig.password
+})
+
 // Criar worker com configuração explícita do Redis
 const ebookWorker = new Worker('ebook-generation', async (job) => {
   console.log(`📝 Processando job ${job.id}: ${job.data.step}`)
@@ -86,8 +113,8 @@ const ebookWorker = new Worker('ebook-generation', async (job) => {
       throw new Error(`Step desconhecido: ${job.data.step}`)
   }
 }, {
-  // Usar URL do Redis do Railway diretamente - sem fallback para localhost
-  connection: redisUrlForBullMQ,
+  // Usar configuração explícita do Redis
+  connection: redisConfig,
   concurrency: 2,
   removeOnComplete: 10,
   removeOnFail: 5,

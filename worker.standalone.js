@@ -2,26 +2,37 @@
 
 // Worker standalone que não depende do Next.js build
 console.log('🚀 Iniciando worker standalone...')
+console.log('📅 Timestamp:', new Date().toISOString())
+console.log('🔧 Node version:', process.version)
+console.log('🔧 Platform:', process.platform)
+
+// Debug de variáveis de ambiente primeiro
+console.log('🔗 Variáveis de ambiente Redis:')
+console.log('  REDIS_URL:', process.env.REDIS_URL ? process.env.REDIS_URL.substring(0, 30) + '...' : 'NÃO DEFINIDO')
+console.log('  REDISCLOUD_URL:', process.env.REDISCLOUD_URL ? process.env.REDISCLOUD_URL.substring(0, 30) + '...' : 'NÃO DEFINIDO')
+console.log('  REDIS_PRIVATE_URL:', process.env.REDIS_PRIVATE_URL ? process.env.REDIS_PRIVATE_URL.substring(0, 30) + '...' : 'NÃO DEFINIDO')
 
 // Importar apenas o necessário
+console.log('📦 Importando BullMQ...')
 const { Worker, Queue } = require('bullmq')
+console.log('✅ BullMQ importado com sucesso')
 
 // Configuração Redis simples
 let redis
 try {
+  console.log('📦 Importando ioredis...')
   const Redis = require('ioredis')
+  console.log('✅ ioredis importado com sucesso')
+  
   const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
   
-  console.log('🔗 REDIS_URL completa:', redisUrl)
-  console.log('🔗 Todas as env vars Redis:')
-  console.log('  REDIS_URL:', process.env.REDIS_URL)
-  console.log('  REDISCLOUD_URL:', process.env.REDISCLOUD_URL)
-  console.log('  REDIS_PRIVATE_URL:', process.env.REDIS_PRIVATE_URL)
+  console.log('🔗 REDIS_URL completa selecionada:', redisUrl)
   
   if (!redisUrl) {
     throw new Error('REDIS_URL não configurado')
   }
   
+  console.log('🔧 Criando conexão Redis...')
   // Forçar uso da URL do Railway
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
@@ -35,6 +46,7 @@ try {
   console.log('✅ Redis configurado com URL:', redisUrl)
 } catch (error) {
   console.error('❌ Erro configurando Redis:', error.message)
+  console.error('❌ Stack trace:', error.stack)
   process.exit(1)
 }
 

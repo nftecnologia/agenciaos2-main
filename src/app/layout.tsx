@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt" className="light">
-      <body className="min-h-screen bg-background font-sans antialiased">
+    <html lang="pt" suppressHydrationWarning>
+      <body className="min-h-screen bg-gray-50 font-sans antialiased" suppressHydrationWarning>
         <SessionProvider>
           {children}
           <Toaster 

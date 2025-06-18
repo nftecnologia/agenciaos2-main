@@ -56,16 +56,21 @@ export default function DashboardPage() {
   const [agents, setAgents] = useState<AIAgent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (status === 'loading') return
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted || status === 'loading') return
     if (!session) {
       router.push('/auth/signin')
       return
     }
     
     loadDashboardData()
-  }, [session, status, router])
+  }, [session, status, router, mounted])
 
   const loadDashboardData = async () => {
     try {
@@ -103,12 +108,14 @@ export default function DashboardPage() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (!mounted || status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando dashboard...</p>
+          <p className="mt-4 text-gray-600">
+            {!mounted ? 'Inicializando...' : status === 'loading' ? 'Verificando autenticação...' : 'Carregando dashboard...'}
+          </p>
         </div>
       </div>
     )

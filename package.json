@@ -2,12 +2,9 @@
   "name": "agenciaos-worker-simple",
   "version": "0.1.0",
   "private": true,
-  "main": "worker.standalone.js",
+  "main": "worker-simple.js",
   "scripts": {
-    "start": "node worker.standalone.js"
+    "start": "node worker-simple.js"
   },
-  "dependencies": {
-    "bullmq": "^5.34.4",
-    "ioredis": "^5.4.1"
-  }
+  "dependencies": {}
 }

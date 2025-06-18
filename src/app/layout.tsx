@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { SessionProvider } from '@/components/providers/session-provider'
 
 export const metadata: Metadata = {
   title: 'AgênciaOS',
@@ -18,17 +19,19 @@ export default function RootLayout({
   return (
     <html lang="pt" className="light">
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#333',
-              color: '#fff',
-            },
-          }}
-        />
+        <SessionProvider>
+          {children}
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#333',
+                color: '#fff',
+              },
+            }}
+          />
+        </SessionProvider>
       </body>
     </html>
   )

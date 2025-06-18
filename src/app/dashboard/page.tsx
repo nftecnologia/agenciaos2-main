@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,30 +23,30 @@ import {
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<{name?: string, email: string} | null>(null)
+  const { data: session, status } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-    } else {
-      router.push('/login')
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
     }
-  }, [router])
+  }, [status, router])
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/auth/signin' })
     toast.success('Logout realizado com sucesso!')
-    router.push('/login')
   }
 
-  if (!user) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
+  }
+
+  if (!session) {
+    return null
   }
 
   const stats = [
@@ -114,7 +115,7 @@ export default function DashboardPage() {
                 <Bell className="h-4 w-4" />
               </Button>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">Olá, {user.name || 'Usuário'}</span>
+                <span className="text-sm text-gray-700">Olá, {session.user.name || 'Usuário'}</span>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair

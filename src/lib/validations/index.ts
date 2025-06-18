@@ -1,51 +1,71 @@
-// Exportar todos os schemas de validação
-export * from './auth'
-export * from './clients'
-export * from './projects'
-export * from './financial'
-
-// Schemas comuns
 import { z } from 'zod'
 
-// Schema para parâmetros de ID
-export const idParamSchema = z.object({
-  id: z.string().min(1, "ID é obrigatório")
+// Clientes
+export const createClientSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  email: z.string().email('Email inválido').optional(),
+  phone: z.string().optional(),
+  company: z.string().optional(),
 })
 
-// Schema para paginação
-export const paginationSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10)
+export const clientsQuerySchema = z.object({
+  search: z.string().optional(),
+  page: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0).default('1'),
+  limit: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0 && val <= 100).default('10'),
 })
 
-// Schema para ordenação
-export const sortSchema = z.object({
-  sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc')
+// Projetos
+export const createProjectSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  description: z.string().optional(),
+  clientId: z.string().min(1, 'Cliente é obrigatório'),
+  status: z.enum(['PLANNING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'CANCELLED']).optional(),
+  budget: z.number().positive('Orçamento deve ser positivo').optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 })
 
-// Schema para busca
-export const searchSchema = z.object({
-  search: z.string().optional()
+export const projectsQuerySchema = z.object({
+  status: z.enum(['PLANNING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'CANCELLED']).optional(),
+  clientId: z.string().optional(),
+  page: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0).default('1'),
+  limit: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0 && val <= 100).default('10'),
 })
 
-// Schema para filtros de data
-export const dateRangeSchema = z.object({
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional()
-}).refine((data) => {
-  if (data.startDate && data.endDate) {
-    return new Date(data.startDate) <= new Date(data.endDate)
-  }
-  return true
-}, {
-  message: "Data de fim deve ser posterior ou igual à data de início",
-  path: ["endDate"]
+// Receitas
+export const createRevenueSchema = z.object({
+  description: z.string().min(2, 'Descrição deve ter pelo menos 2 caracteres'),
+  amount: z.number().positive('Valor deve ser positivo'),
+  category: z.string().min(1, 'Categoria é obrigatória'),
+  clientId: z.string().optional(),
+  projectId: z.string().optional(),
+  isRecurring: z.boolean().optional(),
+  date: z.string(),
 })
 
-// Tipos TypeScript derivados dos schemas comuns
-export type IdParam = z.infer<typeof idParamSchema>
-export type Pagination = z.infer<typeof paginationSchema>
-export type Sort = z.infer<typeof sortSchema>
-export type Search = z.infer<typeof searchSchema>
-export type DateRange = z.infer<typeof dateRangeSchema>
+export const revenuesQuerySchema = z.object({
+  clientId: z.string().optional(),
+  projectId: z.string().optional(),
+  category: z.string().optional(),
+  isRecurring: z.boolean().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  page: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0).default('1'),
+  limit: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0 && val <= 100).default('10'),
+})
+
+// Despesas
+export const createExpenseSchema = z.object({
+  description: z.string().min(2, 'Descrição deve ter pelo menos 2 caracteres'),
+  amount: z.number().positive('Valor deve ser positivo'),
+  category: z.string().min(1, 'Categoria é obrigatória'),
+  date: z.string(),
+})
+
+export const expensesQuerySchema = z.object({
+  category: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  page: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0).default('1'),
+  limit: z.string().transform(val => parseInt(val, 10)).refine(val => val > 0 && val <= 100).default('10'),
+})

@@ -1,212 +1,73 @@
-import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
-import { NextRequest } from "next/server"
-import { appErrors } from "@/lib/errors"
+import { NextRequest } from 'next/server'
 
-// Configurar Redis (usar variáveis de ambiente ou fallback para desenvolvimento)
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : undefined
+// Rate limiting simples sem Redis para desenvolvimento
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
-// Rate limiters para diferentes tipos de endpoints
-export const rateLimiters = {
-  // Rate limiting para autenticação (mais restritivo)
-  auth: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(5, "15 m"), // 5 tentativas por 15 minutos
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para APIs gerais
-  api: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(100, "1 m"), // 100 requests por minuto
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para dashboard (mais permissivo)
-  dashboard: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(200, "1 m"), // 200 requests por minuto
-    analytics: true,
-  }) : null,
-
-  // Rate limiting para IA (muito restritivo)
-  ai: redis ? new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests por minuto
-    analytics: true,
-  }) : null,
-}
-
-// Função para obter identificador único do cliente
-function getClientIdentifier(request: NextRequest): string {
-  // Tentar obter IP real através de headers de proxy
-  const forwarded = request.headers.get("x-forwarded-for")
-  const realIp = request.headers.get("x-real-ip")
-  const cfConnectingIp = request.headers.get("cf-connecting-ip")
-  
-  // Usar o primeiro IP disponível
-  const ip = cfConnectingIp || realIp || forwarded?.split(",")[0] || "unknown"
-  
-  return ip.trim()
-}
-
-// Função para aplicar rate limiting
 export async function applyRateLimit(
   request: NextRequest,
-  type: keyof typeof rateLimiters = "api"
+  type: 'api' | 'auth' | 'dashboard' = 'api'
 ): Promise<{ success: boolean; error?: Error }> {
-  const rateLimiter = rateLimiters[type]
-  
-  // Se Redis não estiver configurado, permitir (desenvolvimento)
-  if (!rateLimiter) {
-    console.warn(`Rate limiting desabilitado para ${type} - Redis não configurado`)
-    return { success: true }
-  }
-
   try {
-    const identifier = getClientIdentifier(request)
-    const { success } = await rateLimiter.limit(identifier)
-
-    if (!success) {
-      console.warn(`Rate limit excedido para ${identifier} no endpoint ${type}`)
-      return {
-        success: false,
-        error: appErrors.RATE_LIMIT_EXCEEDED
-      }
+    // Configurações de rate limit por tipo
+    const limits = {
+      api: { requests: 100, windowMs: 60 * 1000 }, // 100 requests por minuto
+      auth: { requests: 10, windowMs: 60 * 1000 }, // 10 requests por minuto
+      dashboard: { requests: 50, windowMs: 60 * 1000 }, // 50 requests por minuto
     }
 
-    return { success: true }
-  } catch (error) {
-    console.error("Erro ao aplicar rate limiting:", error)
-    // Em caso de erro, permitir a requisição (fail-open)
-    return { success: true }
-  }
-}
+    const { requests, windowMs } = limits[type]
 
-// Middleware para rate limiting em API routes
-export function withRateLimit(
-  type: keyof typeof rateLimiters = "api"
-) {
-  return async (request: NextRequest) => {
-    const result = await applyRateLimit(request, type)
+    // Usar IP como identificador
+    const identifier = request.ip || 'unknown'
+    const key = `${type}:${identifier}`
     
-    if (!result.success && result.error) {
-      throw result.error
+    const now = Date.now()
+    const record = rateLimitMap.get(key)
+
+    if (!record) {
+      // Primeira requisição
+      rateLimitMap.set(key, {
+        count: 1,
+        resetTime: now + windowMs,
+      })
+      return { success: true }
     }
-    
-    return result
-  }
-}
 
-// Rate limiting específico por usuário autenticado
-export async function applyUserRateLimit(
-  userId: string,
-  type: keyof typeof rateLimiters = "api"
-): Promise<{ success: boolean; error?: Error }> {
-  const rateLimiter = rateLimiters[type]
-  
-  if (!rateLimiter) {
-    return { success: true }
-  }
+    if (now > record.resetTime) {
+      // Janela expirou, resetar
+      rateLimitMap.set(key, {
+        count: 1,
+        resetTime: now + windowMs,
+      })
+      return { success: true }
+    }
 
-  try {
-    const identifier = `user:${userId}`
-    const { success } = await rateLimiter.limit(identifier)
-
-    if (!success) {
-      console.warn(`Rate limit excedido para usuário ${userId} no endpoint ${type}`)
+    if (record.count >= requests) {
+      // Limite excedido
       return {
         success: false,
-        error: appErrors.RATE_LIMIT_EXCEEDED
+        error: new Error(`Muitas requisições. Tente novamente em ${Math.ceil((record.resetTime - now) / 1000)} segundos.`),
       }
     }
 
+    // Incrementar contador
+    record.count++
+    rateLimitMap.set(key, record)
+
     return { success: true }
   } catch (error) {
-    console.error("Erro ao aplicar rate limiting por usuário:", error)
+    // Em caso de erro, permitir a requisição
+    console.error('Erro no rate limiting:', error)
     return { success: true }
   }
 }
 
-// Rate limiting específico por agência
-export async function applyAgencyRateLimit(
-  agencyId: string,
-  type: keyof typeof rateLimiters = "api"
-): Promise<{ success: boolean; error?: Error }> {
-  const rateLimiter = rateLimiters[type]
-  
-  if (!rateLimiter) {
-    return { success: true }
-  }
-
-  try {
-    const identifier = `agency:${agencyId}`
-    const { success } = await rateLimiter.limit(identifier)
-
-    if (!success) {
-      console.warn(`Rate limit excedido para agência ${agencyId} no endpoint ${type}`)
-      return {
-        success: false,
-        error: appErrors.RATE_LIMIT_EXCEEDED
-      }
+// Limpar entradas antigas periodicamente
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, record] of rateLimitMap.entries()) {
+    if (now > record.resetTime) {
+      rateLimitMap.delete(key)
     }
-
-    return { success: true }
-  } catch (error) {
-    console.error("Erro ao aplicar rate limiting por agência:", error)
-    return { success: true }
   }
-}
-
-// Função para verificar status do rate limiting
-export async function getRateLimitStatus(
-  identifier: string,
-  type: keyof typeof rateLimiters = "api"
-) {
-  const rateLimiter = rateLimiters[type]
-  
-  if (!rateLimiter) {
-    return null
-  }
-
-  try {
-    // Usar limit com 0 para apenas verificar status sem consumir
-    const result = await rateLimiter.limit(identifier)
-    return {
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-      success: result.success
-    }
-  } catch (error) {
-    console.error("Erro ao verificar status do rate limiting:", error)
-    return null
-  }
-}
-
-// Configurações de rate limiting por ambiente
-export const rateLimitConfig = {
-  development: {
-    enabled: false, // Desabilitado em desenvolvimento
-  },
-  production: {
-    enabled: true,
-    strictMode: true, // Modo mais restritivo em produção
-  },
-  test: {
-    enabled: false, // Desabilitado em testes
-  }
-}
-
-// Verificar se rate limiting está habilitado
-export function isRateLimitEnabled(): boolean {
-  const env = process.env.NODE_ENV || 'development'
-  const config = rateLimitConfig[env as keyof typeof rateLimitConfig]
-  
-  return config?.enabled && !!redis
-}
+}, 60 * 1000) // Limpar a cada minuto

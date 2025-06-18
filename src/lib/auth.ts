@@ -1,10 +1,11 @@
-import NextAuth from "next-auth"
+import NextAuth, { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import { Role } from "@prisma/client"
 import bcrypt from "bcryptjs"
-import { db } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
@@ -29,9 +30,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.log("🔧 DATABASE_URL sendo usada:", process.env.DATABASE_URL?.substring(0, 30) + '...')
           
           // Force reconnect to avoid cached connections
-          await db.$connect()
+          await prisma.$connect()
           
-          const user = await db.user.findUnique({
+          const user = await prisma.user.findUnique({
             where: {
               email: credentials.email as string,
             },
@@ -89,7 +90,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true
     },
   },
-})
+  adapter: PrismaAdapter(prisma),
+}
+
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
 
 declare module "next-auth" {
   interface User {

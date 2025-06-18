@@ -7,5 +7,8 @@ nixPkgs = ["nodejs_20"]
 [phases.install]
 cmds = ["npm install --omit=dev"]
 
+[phases.build]
+cmds = ["echo 'Worker - pulando build phase'"]
+
 [start]
 cmd = "node worker.standalone.js"

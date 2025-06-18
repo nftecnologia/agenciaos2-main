@@ -1,0 +1,13 @@
+# Ignorar arquivos que podem causar detecção automática de build
+next.config.*
+src/
+public/
+.next/
+*.md
+README*
+tsconfig.json
+eslint.config.*
+components.json
+tailwind.config.*
+postcss.config.*
+prisma/

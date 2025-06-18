@@ -1,0 +1,19 @@
+# Railway ignore para worker - reduzir build time
+.next/
+src/
+public/
+*.md
+*.txt
+.git/
+node_modules/
+.env.local
+.env.example
+README*
+DEPLOY*
+memory-bank/
+components.json
+next.config.*
+tailwind.config.*
+postcss.config.*
+tsconfig.json
+eslint.config.*

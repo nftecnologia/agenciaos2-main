@@ -1,0 +1,26 @@
+# Dockerfile específico para worker - evita problemas de build
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalar apenas dependências essenciais
+RUN apk add --no-cache curl
+
+# Copiar apenas arquivos necessários para o worker
+COPY package*.json ./
+COPY worker.standalone.js ./
+
+# Instalar apenas dependências de produção
+RUN npm ci --omit=dev --silent
+
+# Não executar build - worker não precisa
+# Não copiar código do Next.js - worker não precisa
+
+# Definir usuário não-root para segurança
+USER node
+
+# Expor porta (não necessário mas boa prática)
+EXPOSE 3001
+
+# Comando para iniciar worker
+CMD ["node", "worker.standalone.js"]

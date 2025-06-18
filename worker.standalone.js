@@ -27,8 +27,14 @@ try {
   const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
   
   console.log('🔗 REDIS_URL completa selecionada:', redisUrl)
+  console.log('🔍 DEBUG - Todas as variáveis Redis:')
+  console.log('  REDIS_URL:', process.env.REDIS_URL)
+  console.log('  REDISCLOUD_URL:', process.env.REDISCLOUD_URL)  
+  console.log('  REDIS_PRIVATE_URL:', process.env.REDIS_PRIVATE_URL)
   
   if (!redisUrl) {
+    console.error('❌ NENHUMA VARIÁVEL REDIS ENCONTRADA!')
+    console.error('❌ Variáveis disponíveis:', Object.keys(process.env).filter(key => key.includes('REDIS')))
     throw new Error('REDIS_URL não configurado')
   }
   

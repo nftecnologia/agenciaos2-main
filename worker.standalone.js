@@ -41,12 +41,12 @@ try {
   console.log('🔧 Criando conexão Redis...')
   // Forçar uso da URL do Railway
   redis = new Redis(redisUrl, {
-    maxRetriesPerRequest: 3,
-    lazyConnect: true,
-    connectTimeout: 20000,
+    maxRetriesPerRequest: null, // BullMQ requirement
+    lazyConnect: false,
+    connectTimeout: 30000,
     family: 0, // Railway IPv6 support
-    enableOfflineQueue: false,
     retryConnectOnFailover: true,
+    retryDelayOnFailover: 2000,
   })
   
   console.log('✅ Redis configurado com URL:', redisUrl)

@@ -31,8 +31,11 @@ try {
   process.exit(1)
 }
 
-// Configuração da fila
-const redisConnection = { connection: redis }
+// Configuração da fila - usar URL diretamente para evitar problemas
+const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
+console.log('🔗 BullMQ usando Redis:', redisUrl ? redisUrl.substring(0, 30) + '...' : 'NÃO CONFIGURADO')
+
+const redisConnection = redisUrl
 
 // Criar worker
 const ebookWorker = new Worker('ebook-generation', async (job) => {

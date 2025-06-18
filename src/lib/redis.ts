@@ -12,9 +12,7 @@ export function getRedis(): Redis {
 
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
       enableReadyCheck: false,
-      maxLoadingTimeout: 1000,
       lazyConnect: true,
       // Configurações para Railway Redis
       family: 4,

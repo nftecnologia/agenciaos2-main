@@ -122,7 +122,7 @@ export function createEbookWorker() {
   }
 
   ebookWorker = new Worker('ebook-generation', async (job: Job) => {
-    const { ebookId, agencyId, step, approvedDescription } = job.data as EbookJobData
+    const { ebookId, agencyId: _agencyId, step, approvedDescription: _approvedDescription } = job.data as EbookJobData
     
     console.log(`Processando job ${job.id}: ${step} para ebook ${ebookId}`)
     

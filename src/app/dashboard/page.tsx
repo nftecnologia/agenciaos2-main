@@ -75,24 +75,59 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
+      setError('')
       
-      // Load dashboard stats
-      const statsResponse = await fetch('/api/dashboard/stats')
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json()
-        setStats(statsData)
+      // Load dashboard stats with error handling
+      try {
+        const statsResponse = await fetch('/api/dashboard/stats')
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          // Validate the structure before setting
+          if (statsData && typeof statsData === 'object') {
+            setStats(statsData)
+          }
+        } else {
+          console.warn('Stats API returned:', statsResponse.status)
+        }
+      } catch (statsError) {
+        console.warn('Error loading stats:', statsError)
+        // Set default stats structure
+        setStats({
+          clients: { total: 0, new: 0, change: 0 },
+          projects: { total: 0, active: 0, completed: 0, new: 0, change: 0 },
+          revenue: { total: 0, current: 0, count: 0, change: 0 },
+          expenses: { total: 0, current: 0, count: 0, change: 0 },
+          profit: { current: 0, change: 0 }
+        })
       }
 
-      // Load AI agents
-      const agentsResponse = await fetch('/api/ai/agents')
-      if (agentsResponse.ok) {
-        const agentsData = await agentsResponse.json()
-        setAgents(agentsData.agents || [])
+      // Load AI agents with error handling
+      try {
+        const agentsResponse = await fetch('/api/ai/agents')
+        if (agentsResponse.ok) {
+          const agentsData = await agentsResponse.json()
+          setAgents(Array.isArray(agentsData.agents) ? agentsData.agents : [])
+        } else {
+          console.warn('Agents API returned:', agentsResponse.status)
+          setAgents([])
+        }
+      } catch (agentsError) {
+        console.warn('Error loading agents:', agentsError)
+        setAgents([])
       }
 
     } catch (err) {
-      console.error('Erro ao carregar dados:', err)
-      setError('Erro ao carregar dados do dashboard')
+      console.error('Erro geral ao carregar dados:', err)
+      setError('Erro ao carregar dados do dashboard. Algumas funcionalidades podem estar limitadas.')
+      // Set fallback data
+      setStats({
+        clients: { total: 0, new: 0, change: 0 },
+        projects: { total: 0, active: 0, completed: 0, new: 0, change: 0 },
+        revenue: { total: 0, current: 0, count: 0, change: 0 },
+        expenses: { total: 0, current: 0, count: 0, change: 0 },
+        profit: { current: 0, change: 0 }
+      })
+      setAgents([])
     } finally {
       setLoading(false)
     }
@@ -153,7 +188,7 @@ export default function DashboardPage() {
         )}
 
         {/* Stats Overview */}
-        {stats && (
+        {stats && stats.clients && stats.projects && stats.revenue && stats.profit && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center">
@@ -164,8 +199,8 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Clientes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.clients.total}</p>
-                  <p className="text-sm text-green-600">+{stats.clients.new} novos</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.clients?.total || 0}</p>
+                  <p className="text-sm text-green-600">+{stats.clients?.new || 0} novos</p>
                 </div>
               </div>
             </div>
@@ -179,8 +214,8 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Projetos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.projects.total}</p>
-                  <p className="text-sm text-blue-600">{stats.projects.active} ativos</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.projects?.total || 0}</p>
+                  <p className="text-sm text-blue-600">{stats.projects?.active || 0} ativos</p>
                 </div>
               </div>
             </div>
@@ -195,10 +230,10 @@ export default function DashboardPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Receita Mensal</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    R$ {stats.revenue.current.toLocaleString('pt-BR')}
+                    R$ {(stats.revenue?.current || 0).toLocaleString('pt-BR')}
                   </p>
-                  <p className={`text-sm ${stats.revenue.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stats.revenue.change >= 0 ? '+' : ''}{stats.revenue.change}%
+                  <p className={`text-sm ${(stats.revenue?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {(stats.revenue?.change || 0) >= 0 ? '+' : ''}{stats.revenue?.change || 0}%
                   </p>
                 </div>
               </div>
@@ -214,10 +249,10 @@ export default function DashboardPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Lucro Mensal</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    R$ {stats.profit.current.toLocaleString('pt-BR')}
+                    R$ {(stats.profit?.current || 0).toLocaleString('pt-BR')}
                   </p>
-                  <p className={`text-sm ${stats.profit.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stats.profit.change >= 0 ? '+' : ''}{stats.profit.change}%
+                  <p className={`text-sm ${(stats.profit?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {(stats.profit?.change || 0) >= 0 ? '+' : ''}{stats.profit?.change || 0}%
                   </p>
                 </div>
               </div>
@@ -283,27 +318,33 @@ export default function DashboardPage() {
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Agentes de IA Disponíveis</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {agents.map((agent) => (
-              <div
-                key={agent.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => testAPIEndpoint(`/api/ai/${agent.id.replace('_', '/')}`)}
-              >
-                <div className="flex items-center mb-3">
-                  <span className="text-2xl mr-3">{agent.icon}</span>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{agent.name}</h3>
-                    <p className="text-sm text-gray-600">{agent.category}</p>
+            {agents && agents.length > 0 ? (
+              agents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => testAPIEndpoint(`/api/ai/${agent.id.replace('_', '/')}`)}
+                >
+                  <div className="flex items-center mb-3">
+                    <span className="text-2xl mr-3">{agent.icon || '🤖'}</span>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{agent.name || 'Agent'}</h3>
+                      <p className="text-sm text-gray-600">{agent.category || 'IA'}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3">{agent.description || 'Agente de IA'}</p>
+                  <div className="text-xs text-gray-500">
+                    <p>Usos: {agent.usage?.totalUses || 0}</p>
+                    <p>Tokens: {(agent.usage?.totalTokens || 0).toLocaleString()}</p>
+                    <p>Custo: R$ {(agent.usage?.totalCost || 0).toFixed(4)}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-700 mb-3">{agent.description}</p>
-                <div className="text-xs text-gray-500">
-                  <p>Usos: {agent.usage.totalUses}</p>
-                  <p>Tokens: {agent.usage.totalTokens.toLocaleString()}</p>
-                  <p>Custo: R$ {agent.usage.totalCost.toFixed(4)}</p>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">Carregando agentes de IA...</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 

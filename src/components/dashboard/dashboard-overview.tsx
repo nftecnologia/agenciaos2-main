@@ -1,21 +1,89 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useDashboard } from "@/hooks/use-dashboard"
-import { StatsCard, StatsGrid } from "./stats-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { StatsCard, StatsGrid } from './stats-card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Users,
   FolderOpen,
   DollarSign,
   TrendingUp,
   TrendingDown,
-  Activity,
-  CreditCard,
+  Minus,
+  Brain,
+  MessageSquare,
+  Calendar,
   Target,
-} from "lucide-react"
+  BarChart3,
+  Activity,
+  CreditCard
+} from 'lucide-react'
+
+interface DashboardStats {
+  clients: {
+    total: number
+    new: number
+    change: number
+  }
+  projects: {
+    total: number
+    active: number
+    completed: number
+    new: number
+    change: number
+  }
+  revenue: {
+    total: number
+    current: number
+    count: number
+    change: number
+  }
+  expenses: {
+    total: number
+    current: number
+    count: number
+    change: number
+  }
+  profit: {
+    current: number
+    change: number
+  }
+  tasks?: {
+    total: number
+    completed: number
+    inProgress: number
+    completionRate: number
+  }
+  summary?: {
+    totalClients: number
+    activeProjects: number
+    monthlyRevenue: number
+    monthlyProfit: number
+  }
+}
+
+interface AIAgent {
+  id: string
+  name: string
+  description: string
+  category: string
+  icon: string
+  color: string
+  usage: {
+    totalUses: number
+    totalTokens: number
+    totalCost: number
+  }
+}
 
 const periodOptions = [
   { value: "7d", label: "Últimos 7 dias" },
@@ -24,9 +92,71 @@ const periodOptions = [
   { value: "1y", label: "Último ano" },
 ]
 
-export function DashboardOverview() {
-  const [period, setPeriod] = useState("30d")
-  const { data: stats, isLoading, error } = useDashboard(period)
+interface DashboardOverviewProps {
+  period?: string
+  onPeriodChange?: (period: string) => void
+}
+
+export function DashboardOverview({ period = '30d', onPeriodChange }: DashboardOverviewProps) {
+  const [currentPeriod, setPeriod] = useState(period)
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [agents, setAgents] = useState<AIAgent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [currentPeriod])
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      
+      // Load dashboard stats
+      try {
+        const statsResponse = await fetch(`/api/dashboard/stats?period=${currentPeriod}`)
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setStats(statsData)
+        }
+      } catch (statsError) {
+        console.warn('Error loading stats:', statsError)
+        setStats({
+          clients: { total: 0, new: 0, change: 0 },
+          projects: { total: 0, active: 0, completed: 0, new: 0, change: 0 },
+          revenue: { total: 0, current: 0, count: 0, change: 0 },
+          expenses: { total: 0, current: 0, count: 0, change: 0 },
+          profit: { current: 0, change: 0 },
+          tasks: { total: 0, completed: 0, inProgress: 0, completionRate: 0 },
+          summary: { totalClients: 0, activeProjects: 0, monthlyRevenue: 0, monthlyProfit: 0 }
+        })
+      }
+
+      // Load AI agents
+      try {
+        const agentsResponse = await fetch('/api/ai/agents')
+        if (agentsResponse.ok) {
+          const agentsData = await agentsResponse.json()
+          setAgents(Array.isArray(agentsData.agents) ? agentsData.agents.slice(0, 6) : [])
+        }
+      } catch (agentsError) {
+        console.warn('Error loading agents:', agentsError)
+        setAgents([])
+      }
+
+    } catch (err) {
+      console.error('Error loading dashboard data:', err)
+      setError('Erro ao carregar dados do dashboard')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePeriodChange = (newPeriod: string) => {
+    setPeriod(newPeriod)
+    onPeriodChange?.(newPeriod)
+  }
 
   if (error) {
     return (

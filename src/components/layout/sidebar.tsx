@@ -36,7 +36,7 @@ import { useState } from 'react'
 const navigation = [
   {
     name: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: LayoutDashboard,
     current: false,
   },
@@ -66,10 +66,10 @@ const navigation = [
   },
   {
     name: 'Agentes',
-    href: '/ia',
+    href: '/agentes',
     icon: Brain,
     current: false,
-    badge: '30',
+    badge: '9+',
   },
   {
     name: 'ChatGPT',

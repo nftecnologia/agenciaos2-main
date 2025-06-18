@@ -3,13 +3,13 @@ NODE_ENV = "production"
 SKIP_ENV_VALIDATION = "1"
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x", "chromium"]
+nixPkgs = ["nodejs_20", "npm-9_x"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm ci --omit=dev"]
 
 [phases.build]
-cmds = ["echo 'Worker build - skipping Next.js build'"]
+cmds = ["echo 'Worker service - sem build necessário'"]
 
 [start]
-cmd = "npm run worker"
+cmd = "npm run worker:standalone"

@@ -12,6 +12,8 @@ try {
   const Redis = require('ioredis')
   const redisUrl = process.env.REDIS_URL || process.env.REDISCLOUD_URL || process.env.REDIS_PRIVATE_URL
   
+  console.log('🔗 Verificando Redis URL:', redisUrl ? redisUrl.substring(0, 20) + '...' : 'NÃO CONFIGURADO')
+  
   if (!redisUrl) {
     throw new Error('REDIS_URL não configurado')
   }
@@ -20,6 +22,7 @@ try {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
     connectTimeout: 10000,
+    family: 4, // IPv4
   })
   
   console.log('✅ Redis configurado')

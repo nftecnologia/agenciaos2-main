@@ -27,7 +27,7 @@ try {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
     connectTimeout: 20000,
-    family: 4, // IPv4
+    family: 0, // Railway IPv6 support
     enableOfflineQueue: false,
     retryConnectOnFailover: true,
   })
@@ -62,16 +62,18 @@ console.log('  hostname:', redisUrlParsed.hostname)
 console.log('  port:', redisUrlParsed.port)
 console.log('  password:', redisUrlParsed.password ? '***' : 'sem senha')
 
-// Configuração explícita do Redis para BullMQ
+// Configuração explícita do Redis para BullMQ (Railway requer family: 0)
 const redisConfig = {
   host: redisUrlParsed.hostname,
   port: parseInt(redisUrlParsed.port),
   password: redisUrlParsed.password,
+  username: redisUrlParsed.username || 'default',
   db: 0,
   maxRetriesPerRequest: 3,
   connectTimeout: 20000,
-  family: 4,
+  family: 0, // Railway IPv6 support
   enableOfflineQueue: false,
+  tls: redisUrlParsed.protocol === 'rediss:' ? {} : undefined,
 }
 
 console.log('🔧 Configuração Redis para BullMQ:', {
